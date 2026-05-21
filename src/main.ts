@@ -116,7 +116,7 @@ export default class SeegeneVaultPlugin extends Plugin {
       const leaf = this.app.workspace.getLeaf();
       if (leaf) leaf.detach();
     } catch (err) {
-      console.error("Seegene Vault: URL open failed", err);
+      console.error("Seegene Vault Plugin: URL open failed", err);
     }
   }
 

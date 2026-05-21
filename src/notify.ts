@@ -67,7 +67,7 @@ function sendViaOutlook(to: string, subject: string, body: string): Promise<bool
       { timeout: 15000 },
       (error: Error | null) => {
         if (error) {
-          console.error("Seegene Vault: Outlook send failed", error);
+          console.error("Seegene Vault Plugin: Outlook send failed", error);
           new Notice("메일 전송 실패: Outlook이 실행 중인지 확인하세요");
           resolve(false);
         } else {

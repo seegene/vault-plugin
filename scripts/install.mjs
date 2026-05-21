@@ -15,7 +15,7 @@ if (!existsSync(vaultPath)) {
   process.exit(1);
 }
 
-const pluginDir = join(vaultPath, ".obsidian", "plugins", "seegene-vault");
+const pluginDir = join(vaultPath, ".obsidian", "plugins", "vault-plugin");
 mkdirSync(pluginDir, { recursive: true });
 
 for (const file of ["main.js", "manifest.json", "styles.css"]) {
@@ -23,4 +23,4 @@ for (const file of ["main.js", "manifest.json", "styles.css"]) {
   console.log(`Copied: ${file} -> ${pluginDir}`);
 }
 
-console.log("\n설치 완료. Obsidian > Community plugins > Seegene Vault 활성화하세요.");
+console.log("\n설치 완료. Obsidian > Community plugins > Seegene Vault Plugin 활성화하세요.");

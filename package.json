@@ -1,6 +1,6 @@
 {
-  "name": "seegene-vault",
-  "version": "0.1.0",
+  "name": "vault-plugin",
+  "version": "0.1.1",
   "scripts": {
     "build": "node esbuild.config.mjs production",
     "dev": "node esbuild.config.mjs",

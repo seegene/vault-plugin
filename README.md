@@ -1,4 +1,4 @@
-# Seegene Vault — Obsidian Plugin
+# Seegene Vault Plugin — Obsidian Plugin
 
 씨젠 SW연구소 공용 볼트 플러그인. 문서 댓글, `@`멘션 알림, `.url` 파일 처리를 한 플러그인으로 묶음.
 
@@ -9,11 +9,11 @@
 3. 입력란에 다음 입력:
 
    ```
-   seegene/vault-plugin-seegene
+   seegene/vault-plugin
    ```
 
 4. **Add Plugin** 클릭 → BRAT가 최신 GitHub Release에서 `main.js`/`manifest.json`/`styles.css`를 받아 자동 설치.
-5. **Community Plugins** 목록에서 **Seegene Vault** 활성화.
+5. **Community Plugins** 목록에서 **Seegene Vault Plugin** 활성화.
 
 업데이트는 BRAT가 자동 감지해서 알림으로 띄워준다. 수동으로 즉시 확인하려면: `BRAT: Check for updates for all beta plugins`.
 
@@ -28,7 +28,7 @@
 
 ## 설정
 
-**Settings → Seegene Vault**에서:
+**Settings → Seegene Vault Plugin**에서:
 
 - **Members** — 이름/이메일 등록. `@` 자동완성과 알림 발송 대상.
 - **Notify on comment** — 댓글에 멘션 포함 시 알림 전송 여부.
