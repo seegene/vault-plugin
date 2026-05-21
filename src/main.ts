@@ -11,9 +11,21 @@ const DEFAULT_SETTINGS: PluginSettings = {
   members: [],
   notifyOnComment: true,
   notifyOnMention: true,
-  membersSourceFile: "연구소 생활/for-ai/조직구조.md",
-  membersSection: "SW연구소",
+  membersSourceFile: "연구소 생활/for-ai/조직구조-전직원.md",
+  membersSections: [
+    "SW연구소",
+    "SW기술랩",
+    "인실리코기획랩",
+    "인실리코웹기획팀",
+    "인실리코운영기획팀",
+    "웹개발팀",
+    "Application SW팀",
+    "Architect팀",
+    "Core개발팀",
+  ],
 };
+
+const LEGACY_SOURCE_FILE = "연구소 생활/for-ai/조직구조.md";
 
 export default class SeegeneVaultPlugin extends Plugin {
   settings: PluginSettings = DEFAULT_SETTINGS;
@@ -121,7 +133,7 @@ export default class SeegeneVaultPlugin extends Plugin {
       const members = await parseOrgMembers(
         this.app.vault,
         this.settings.membersSourceFile,
-        this.settings.membersSection
+        this.settings.membersSections
       );
       this.settings.members = members;
       await this.saveSettings();
@@ -365,7 +377,20 @@ export default class SeegeneVaultPlugin extends Plugin {
 
   async loadSettings(): Promise<void> {
     const data = await this.loadData();
-    this.settings = { ...DEFAULT_SETTINGS, ...data?.settings };
+    const raw = (data?.settings ?? {}) as Record<string, unknown>;
+
+    if (typeof raw.membersSection === "string" && !Array.isArray(raw.membersSections)) {
+      const isOnLegacyDefault = !raw.membersSourceFile || raw.membersSourceFile === LEGACY_SOURCE_FILE;
+      if (isOnLegacyDefault) {
+        raw.membersSourceFile = DEFAULT_SETTINGS.membersSourceFile;
+        raw.membersSections = DEFAULT_SETTINGS.membersSections;
+      } else {
+        raw.membersSections = [raw.membersSection];
+      }
+      delete raw.membersSection;
+    }
+
+    this.settings = { ...DEFAULT_SETTINGS, ...(raw as Partial<PluginSettings>) };
     this.mentionRecord = data?.mentionRecord ?? {};
   }
 

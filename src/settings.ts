@@ -59,17 +59,24 @@ export class SeegeneSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("섹션 이름")
-      .setDesc("이 제목 바로 아래 첫 번째 표에서 멤버를 추출합니다 (예: SW연구소)")
-      .addText((t) =>
-        t
-          .setPlaceholder("SW연구소")
-          .setValue(this.plugin.settings.membersSection)
+      .setName("섹션 이름 (한 줄에 하나)")
+      .setDesc(
+        "이 헤딩들 아래에서 멤버를 추출합니다. 표 / bullet 리스트 자동 감지. '### Core개발팀 (팀장: 박영우)' 헤딩은 'Core개발팀'으로 매칭됩니다."
+      )
+      .addTextArea((t) => {
+        t.setPlaceholder("SW연구소\nSW기술랩\n...")
+          .setValue(this.plugin.settings.membersSections.join("\n"))
           .onChange(async (v) => {
-            this.plugin.settings.membersSection = v.trim();
+            this.plugin.settings.membersSections = v
+              .split(/\r?\n/)
+              .map((s) => s.trim())
+              .filter(Boolean);
             await this.plugin.saveSettings();
-          })
-      );
+          });
+        t.inputEl.rows = 10;
+        t.inputEl.style.width = "100%";
+        t.inputEl.style.fontFamily = "var(--font-monospace)";
+      });
 
     new Setting(containerEl).addButton((b) =>
       b

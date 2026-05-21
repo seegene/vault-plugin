@@ -9,7 +9,7 @@ export interface PluginSettings {
   notifyOnComment: boolean;
   notifyOnMention: boolean;
   membersSourceFile: string;
-  membersSection: string;
+  membersSections: string[];
 }
 
 export interface Reply {

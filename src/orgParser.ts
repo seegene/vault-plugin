@@ -4,19 +4,31 @@ import { TeamMember } from "./types";
 export async function parseOrgMembers(
   vault: Vault,
   filePath: string,
-  section: string
+  sections: string[]
 ): Promise<TeamMember[]> {
   const file = vault.getAbstractFileByPath(filePath);
   if (!(file instanceof TFile)) {
     throw new Error(`구성원 소스 파일을 찾을 수 없음: ${filePath}`);
   }
   const content = await vault.cachedRead(file);
-  return extractMembersFromMarkdown(content, section);
+
+  const all: TeamMember[] = [];
+  const seen = new Set<string>();
+  for (const section of sections) {
+    const members = extractMembersFromMarkdown(content, section);
+    for (const m of members) {
+      const key = `${m.name}|${m.email}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      all.push(m);
+    }
+  }
+  return all;
 }
 
 export function extractMembersFromMarkdown(content: string, section: string): TeamMember[] {
   const lines = content.split(/\r?\n/);
-  const sectionRegex = new RegExp(`^(#{2,6})\\s+${escapeRegex(section)}\\s*$`);
+  const sectionRegex = new RegExp(`^(#{2,6})\\s+${escapeRegex(section)}(?=\\s|\\(|$)`);
 
   let sectionIdx = -1;
   let sectionLevel = 0;
@@ -30,19 +42,28 @@ export function extractMembersFromMarkdown(content: string, section: string): Te
   }
   if (sectionIdx < 0) return [];
 
+  const contentLines: string[] = [];
   for (let i = sectionIdx + 1; i < lines.length; i++) {
     const line = lines[i];
     const headingMatch = line.match(/^(#+)\s/);
     if (headingMatch && headingMatch[1].length <= sectionLevel) break;
-    if (line.trim().startsWith("|")) {
-      return parseTable(lines, i);
-    }
+    contentLines.push(line);
   }
+
+  const firstContent = contentLines.find((l) => l.trim().length > 0);
+  if (!firstContent) return [];
+
+  const trimmed = firstContent.trim();
+  if (trimmed.startsWith("|")) return parseTable(contentLines);
+  if (trimmed.startsWith("-") || trimmed.startsWith("*")) return parseBulletList(contentLines);
   return [];
 }
 
-function parseTable(lines: string[], startIdx: number): TeamMember[] {
-  const headerCells = parseTableRow(lines[startIdx]);
+function parseTable(lines: string[]): TeamMember[] {
+  const tableStart = lines.findIndex((l) => l.trim().startsWith("|"));
+  if (tableStart < 0) return [];
+
+  const headerCells = parseTableRow(lines[tableStart]);
   const dutyColIdx = headerCells.findIndex((c) => c.includes("담당"));
   const emailColIdx = headerCells.findIndex(
     (c) => c.includes("이메일") || c.toLowerCase().includes("email")
@@ -50,9 +71,7 @@ function parseTable(lines: string[], startIdx: number): TeamMember[] {
   if (dutyColIdx < 0 || emailColIdx < 0) return [];
 
   const members: TeamMember[] = [];
-  const seen = new Set<string>();
-
-  for (let i = startIdx + 2; i < lines.length; i++) {
+  for (let i = tableStart + 2; i < lines.length; i++) {
     const line = lines[i];
     if (!line.trim().startsWith("|")) break;
 
@@ -65,11 +84,30 @@ function parseTable(lines: string[], startIdx: number): TeamMember[] {
     const parsed = parseDutyCell(cells[dutyColIdx]);
     if (!parsed) continue;
 
-    const key = `${parsed.name}|${email}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-
     members.push({ name: parsed.name, position: parsed.position, email });
+  }
+  return members;
+}
+
+const BULLET_REGEX = /^[-*]\s+\*\*([^*]+)\*\*\s+(.+?)\s*\/\s*(.+?)\s*\/\s*([\w.+\-]+@[\w.\-]+)/;
+
+function parseBulletList(lines: string[]): TeamMember[] {
+  const members: TeamMember[] = [];
+  for (const line of lines) {
+    const m = line.match(BULLET_REGEX);
+    if (!m) continue;
+    const name = m[1].trim();
+    const role = m[2].trim();
+    const rank = m[3].trim();
+    const email = m[4].trim();
+    if (!name || !email) continue;
+
+    let position: string;
+    if (role === "-" || !role) position = rank;
+    else if (rank === "-" || !rank) position = role;
+    else position = `${role} / ${rank}`;
+
+    members.push({ name, position, email });
   }
   return members;
 }
