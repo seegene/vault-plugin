@@ -33,8 +33,14 @@ export async function sendNotification(params: NotifyParams): Promise<boolean> {
   <p style="margin-top:16px;padding:12px;background:#f0f9ff;border-left:3px solid #0284c7;border-radius:4px;">
     <b style="color:#0284c7;">📎 첨부된 .url 파일을 더블클릭하면 Obsidian이 자동으로 열립니다.</b>
   </p>
-  <p style="font-size:12px;color:#666;margin-top:12px;">또는 아래 주소를 복사 → Win+R(실행창)에 붙여넣기:</p>
-  <pre style="font-family:Consolas,monospace;font-size:11px;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-all;margin:0;">${eUri}</pre>
+  <p style="font-size:13px;color:#444;margin-top:16px;margin-bottom:4px;">
+    <b>또는 아래 문서명을 복사 → Obsidian에서 <code style="background:#eee;padding:1px 4px;border-radius:3px;">Ctrl+O</code> → 붙여넣기:</b>
+  </p>
+  <pre style="font-family:Consolas,monospace;font-size:13px;color:#000;background:#fef3c7;padding:10px;border-radius:4px;white-space:pre-wrap;word-break:break-all;margin:0;border-left:3px solid #f59e0b;user-select:all;">${eTitle}</pre>
+  <details style="margin-top:12px;">
+    <summary style="cursor:pointer;font-size:12px;color:#666;">위 방법이 다 안 되면 직접 URL 복사 (Win+R)</summary>
+    <pre style="font-family:Consolas,monospace;font-size:11px;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-all;margin:6px 0 0 0;">${eUri}</pre>
+  </details>
 </div>
 `.trim();
 
