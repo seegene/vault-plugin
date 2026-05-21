@@ -19,31 +19,45 @@ export async function sendNotification(params: NotifyParams): Promise<boolean> {
     ? contextText.replace(/https?:\/\/\S+/g, "[링크]")
     : "";
 
-  const fileMatch = obsidianUri.match(/file=([^&]+)/);
-  const filePath = fileMatch ? decodeURIComponent(fileMatch[1]) : documentTitle;
+  const eAuthor = htmlEscape(author);
+  const eTitle = htmlEscape(documentTitle);
+  const eComment = htmlEscape(commentText).replace(/\n/g, "<br>");
+  const eContext = cleanContext ? htmlEscape(cleanContext) : "";
+  const eUri = htmlEscape(obsidianUri);
 
-  const folderPath = filePath.substring(0, filePath.lastIndexOf("/"));
-  const encodedFolder = folderPath.split("/").map(encodeURIComponent).join("/");
-  const sharepointFolder = `https://seegene.sharepoint.com/SW/${encodedFolder}`;
+  const htmlBody = `
+<div style="font-family:'Segoe UI',sans-serif;font-size:14px;line-height:1.6;color:#222;">
+  <p>${eAuthor}님이 <b>"${eTitle}"</b> 문서에서 회원님을 멘션했습니다.</p>
+  <p><b>댓글</b><br>${eComment}</p>
+  ${eContext ? `<p><b>대상 텍스트</b><br><span style="color:#555;">${eContext}</span></p>` : ""}
+  <p style="margin-top:20px;">
+    <a href="${eUri}" style="display:inline-block;padding:10px 18px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">
+      Obsidian에서 열기
+    </a>
+  </p>
+  <p style="color:#888;font-size:11px;margin-top:16px;">
+    버튼이 열리지 않으면 Obsidian이 설치돼 있어야 합니다. 직접 검색: Ctrl+O → "${eTitle}"
+  </p>
+</div>
+`.trim();
 
-  const body = [
-    `${author}님이 "${documentTitle}" 문서에서 회원님을 멘션했습니다.`,
-    ``,
-    `댓글: ${commentText}`,
-    cleanContext ? `대상 텍스트: ${cleanContext}` : "",
-    ``,
-    `[Obsidian에서 열기] Ctrl+O > "${documentTitle}" 검색`,
-    `[SharePoint 폴더] ${sharepointFolder}`,
-  ].filter(Boolean).join("\r\n");
-
-  return sendViaOutlook(to.email, subject, body);
+  return sendViaOutlook(to.email, subject, htmlBody);
 }
 
-function sendViaOutlook(to: string, subject: string, body: string): Promise<boolean> {
+function htmlEscape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sendViaOutlook(to: string, subject: string, htmlBody: string): Promise<boolean> {
   return new Promise((resolve) => {
     const eTo = to.replace(/'/g, "''");
     const eSubject = subject.replace(/'/g, "''");
-    const eBody = body.replace(/'/g, "''");
+    const eHtml = htmlBody.replace(/'/g, "''");
 
     const psScript = [
       "$ol = New-Object -ComObject Outlook.Application",
@@ -51,7 +65,7 @@ function sendViaOutlook(to: string, subject: string, body: string): Promise<bool
       "$mail = $ol.CreateItem(0)",
       `$mail.To = '${eTo}'`,
       `$mail.Subject = '${eSubject}'`,
-      `$mail.Body = '${eBody}'`,
+      `$mail.HTMLBody = '${eHtml}'`,
       "$sentFolder = $ns.GetDefaultFolder(5)",
       "$mail.SaveSentMessageFolder = $sentFolder",
       "$mail.Send()",
