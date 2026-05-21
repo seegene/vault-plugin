@@ -47,6 +47,22 @@
 
 /* ── @Mention autocomplete ── */
 
-.sg-mention-item { display: flex; flex-direction: column; gap: 2px; }
+.sg-mention-item { display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
+.sg-mention-top { display: flex; align-items: baseline; gap: 8px; }
 .sg-mention-name { font-weight: 600; }
-.sg-mention-email { font-size: 0.85em; color: var(--text-muted); }
+.sg-mention-position {
+  font-size: 0.8em; color: var(--text-accent);
+  background: var(--background-modifier-hover); padding: 1px 6px; border-radius: 8px;
+}
+.sg-mention-email { font-size: 0.8em; color: var(--text-muted); }
+
+/* ── Member list (settings) ── */
+
+.sg-member-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.sg-member-row {
+  display: flex; align-items: baseline; gap: 10px; padding: 6px 10px;
+  background: var(--background-secondary); border-radius: 4px;
+}
+.sg-member-name { font-weight: 600; min-width: 80px; }
+.sg-member-position { font-size: 0.85em; color: var(--text-accent); flex: 1; }
+.sg-member-email { font-size: 0.85em; color: var(--text-muted); }

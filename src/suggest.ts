@@ -27,14 +27,22 @@ export class MentionSuggest extends EditorSuggest<TeamMember> {
 
   getSuggestions(context: EditorSuggestContext): TeamMember[] {
     const query = context.query.toLowerCase();
+    if (!query) return this.plugin.settings.members.slice(0, 20);
     return this.plugin.settings.members.filter(
-      (m) => m.name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query)
+      (m) =>
+        m.name.toLowerCase().includes(query) ||
+        m.email.toLowerCase().includes(query) ||
+        (m.position?.toLowerCase() ?? "").includes(query)
     );
   }
 
   renderSuggestion(member: TeamMember, el: HTMLElement): void {
     const container = el.createDiv({ cls: "sg-mention-item" });
-    container.createDiv({ cls: "sg-mention-name", text: member.name });
+    const top = container.createDiv({ cls: "sg-mention-top" });
+    top.createSpan({ cls: "sg-mention-name", text: member.name });
+    if (member.position) {
+      top.createSpan({ cls: "sg-mention-position", text: member.position });
+    }
     container.createDiv({ cls: "sg-mention-email", text: member.email });
   }
 

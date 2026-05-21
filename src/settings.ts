@@ -1,6 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type SeegeneVaultPlugin from "./main";
-import { TeamMember } from "./types";
 
 export class SeegeneSettingTab extends PluginSettingTab {
   plugin: SeegeneVaultPlugin;
@@ -23,49 +22,82 @@ export class SeegeneSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("댓글 추가 시 알림")
       .setDesc("댓글에 @멘션이 포함되면 해당 구성원에게 Outlook 메일 발송")
-      .addToggle((t) => t.setValue(this.plugin.settings.notifyOnComment).onChange(async (v) => {
-        this.plugin.settings.notifyOnComment = v;
-        await this.plugin.saveSettings();
-      }));
+      .addToggle((t) =>
+        t.setValue(this.plugin.settings.notifyOnComment).onChange(async (v) => {
+          this.plugin.settings.notifyOnComment = v;
+          await this.plugin.saveSettings();
+        })
+      );
 
     new Setting(containerEl)
       .setName("본문 @멘션 알림")
       .setDesc("문서 본문에 새로운 @멘션 작성 시 알림")
-      .addToggle((t) => t.setValue(this.plugin.settings.notifyOnMention).onChange(async (v) => {
-        this.plugin.settings.notifyOnMention = v;
-        await this.plugin.saveSettings();
-      }));
+      .addToggle((t) =>
+        t.setValue(this.plugin.settings.notifyOnMention).onChange(async (v) => {
+          this.plugin.settings.notifyOnMention = v;
+          await this.plugin.saveSettings();
+        })
+      );
 
-    containerEl.createEl("h3", { text: "구성원 목록" });
-    containerEl.createEl("p", { text: "@ 자동완성 및 알림 대상입니다.", cls: "setting-item-description" });
-
-    this.plugin.settings.members.forEach((member, index) => {
-      new Setting(containerEl)
-        .addText((t) => t.setPlaceholder("이름").setValue(member.name).onChange(async (v) => {
-          const updated = [...this.plugin.settings.members];
-          updated[index] = { ...updated[index], name: v };
-          this.plugin.settings.members = updated;
-          await this.plugin.saveSettings();
-        }))
-        .addText((t) => t.setPlaceholder("email@seegene.com").setValue(member.email).onChange(async (v) => {
-          const updated = [...this.plugin.settings.members];
-          updated[index] = { ...updated[index], email: v };
-          this.plugin.settings.members = updated;
-          await this.plugin.saveSettings();
-        }))
-        .addButton((b) => b.setIcon("trash").setTooltip("삭제").onClick(async () => {
-          this.plugin.settings.members = this.plugin.settings.members.filter((_, i) => i !== index);
-          await this.plugin.saveSettings();
-          this.display();
-        }));
+    containerEl.createEl("h3", { text: "구성원 소스" });
+    containerEl.createEl("p", {
+      text: "지정한 마크다운 파일의 표에서 구성원을 자동으로 읽어옵니다. 파일이 변경되면 자동 새로고침됩니다.",
+      cls: "setting-item-description",
     });
 
+    new Setting(containerEl)
+      .setName("소스 파일 경로")
+      .setDesc("볼트 기준 상대 경로 (예: 연구소 생활/for-ai/조직구조.md)")
+      .addText((t) =>
+        t
+          .setPlaceholder("연구소 생활/for-ai/조직구조.md")
+          .setValue(this.plugin.settings.membersSourceFile)
+          .onChange(async (v) => {
+            this.plugin.settings.membersSourceFile = v.trim();
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("섹션 이름")
+      .setDesc("이 제목 바로 아래 첫 번째 표에서 멤버를 추출합니다 (예: SW연구소)")
+      .addText((t) =>
+        t
+          .setPlaceholder("SW연구소")
+          .setValue(this.plugin.settings.membersSection)
+          .onChange(async (v) => {
+            this.plugin.settings.membersSection = v.trim();
+            await this.plugin.saveSettings();
+          })
+      );
+
     new Setting(containerEl).addButton((b) =>
-      b.setButtonText("+ 구성원 추가").setCta().onClick(async () => {
-        this.plugin.settings.members = [...this.plugin.settings.members, { name: "", email: "" }];
-        await this.plugin.saveSettings();
-        this.display();
-      })
+      b
+        .setButtonText("지금 새로고침")
+        .setCta()
+        .onClick(async () => {
+          await this.plugin.refreshOrgMembers(true);
+          this.display();
+        })
     );
+
+    const members = this.plugin.settings.members;
+    containerEl.createEl("h3", { text: `현재 인식된 구성원 (${members.length}명)` });
+
+    if (members.length === 0) {
+      containerEl.createEl("p", {
+        text: "구성원이 없습니다. 소스 파일 경로와 섹션 이름을 확인하고 '지금 새로고침'을 눌러주세요.",
+        cls: "setting-item-description",
+      });
+      return;
+    }
+
+    const list = containerEl.createDiv({ cls: "sg-member-list" });
+    for (const m of members) {
+      const row = list.createDiv({ cls: "sg-member-row" });
+      row.createSpan({ cls: "sg-member-name", text: m.name });
+      if (m.position) row.createSpan({ cls: "sg-member-position", text: m.position });
+      row.createSpan({ cls: "sg-member-email", text: m.email });
+    }
   }
 }

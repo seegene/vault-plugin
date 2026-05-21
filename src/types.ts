@@ -1,12 +1,15 @@
 export interface TeamMember {
   name: string;
   email: string;
+  position?: string;
 }
 
 export interface PluginSettings {
   members: TeamMember[];
   notifyOnComment: boolean;
   notifyOnMention: boolean;
+  membersSourceFile: string;
+  membersSection: string;
 }
 
 export interface Reply {

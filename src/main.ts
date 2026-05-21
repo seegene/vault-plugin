@@ -5,11 +5,14 @@ import { CommentPanelView, VIEW_TYPE } from "./panel";
 import { MentionSuggest } from "./suggest";
 import { SeegeneSettingTab } from "./settings";
 import { sendNotification } from "./notify";
+import { parseOrgMembers } from "./orgParser";
 
 const DEFAULT_SETTINGS: PluginSettings = {
   members: [],
   notifyOnComment: true,
   notifyOnMention: true,
+  membersSourceFile: "연구소 생활/for-ai/조직구조.md",
+  membersSection: "SW연구소",
 };
 
 export default class SeegeneVaultPlugin extends Plugin {
@@ -68,6 +71,12 @@ export default class SeegeneVaultPlugin extends Plugin {
       callback: () => this.togglePanel(),
     });
 
+    this.addCommand({
+      id: "refresh-members",
+      name: "구성원 목록을 조직구조 파일에서 새로고침",
+      callback: () => this.refreshOrgMembers(true),
+    });
+
     // ── Body @mention detection ──
     const debouncedCheck = debounce(
       (file: TFile) => this.checkBodyMentions(file),
@@ -75,8 +84,14 @@ export default class SeegeneVaultPlugin extends Plugin {
       true
     );
 
+    const debouncedOrgRefresh = debounce(() => this.refreshOrgMembers(false), 1500, false);
+
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
+        if (file instanceof TFile && file.path === this.settings.membersSourceFile) {
+          debouncedOrgRefresh();
+          return;
+        }
         if (this.settings.notifyOnMention && file instanceof TFile && file.extension === "md") {
           debouncedCheck(file);
         }
@@ -85,6 +100,8 @@ export default class SeegeneVaultPlugin extends Plugin {
 
     // ── Startup ──
     this.app.workspace.onLayoutReady(() => {
+      this.refreshOrgMembers(false);
+
       const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE);
       for (let i = 1; i < existing.length; i++) existing[i].detach();
 
@@ -96,6 +113,23 @@ export default class SeegeneVaultPlugin extends Plugin {
 
       if (existing.length === 0) this.activatePanel();
     });
+  }
+
+  async refreshOrgMembers(showNotice: boolean): Promise<void> {
+    try {
+      const members = await parseOrgMembers(
+        this.app.vault,
+        this.settings.membersSourceFile,
+        this.settings.membersSection
+      );
+      this.settings.members = members;
+      await this.saveSettings();
+      this.refreshPanel();
+      if (showNotice) new Notice(`구성원 ${members.length}명 로드 완료`);
+    } catch (e) {
+      console.error("Seegene Vault Plugin: org refresh failed", e);
+      if (showNotice) new Notice(`구성원 새로고침 실패: ${(e as Error).message}`);
+    }
   }
 
   onunload(): void {
