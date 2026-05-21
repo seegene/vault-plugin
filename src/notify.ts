@@ -26,18 +26,15 @@ export async function sendNotification(params: NotifyParams): Promise<boolean> {
   const eUri = htmlEscape(obsidianUri);
 
   const htmlBody = `
-<div style="font-family:'Segoe UI',sans-serif;font-size:14px;line-height:1.6;color:#222;">
+<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#222;">
   <p>${eAuthor}님이 <b>"${eTitle}"</b> 문서에서 회원님을 멘션했습니다.</p>
   <p><b>댓글</b><br>${eComment}</p>
   ${eContext ? `<p><b>대상 텍스트</b><br><span style="color:#555;">${eContext}</span></p>` : ""}
-  <p style="margin-top:20px;">
-    <a href="${eUri}" style="display:inline-block;padding:10px 18px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">
-      Obsidian에서 열기
-    </a>
+  <p style="margin-top:16px;font-size:15px;">
+    ▶ <a href="${eUri}">Obsidian에서 바로 열기</a>
   </p>
-  <p style="color:#888;font-size:11px;margin-top:16px;">
-    버튼이 열리지 않으면 Obsidian이 설치돼 있어야 합니다. 직접 검색: Ctrl+O → "${eTitle}"
-  </p>
+  <p style="font-size:12px;color:#666;margin-top:8px;">위 링크가 안 열리면 아래 주소를 복사 → Win+R(실행창)에 붙여넣기:</p>
+  <pre style="font-family:Consolas,monospace;font-size:11px;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-all;margin:0;">${eUri}</pre>
 </div>
 `.trim();
 
@@ -63,6 +60,7 @@ function sendViaOutlook(to: string, subject: string, htmlBody: string): Promise<
       "$ol = New-Object -ComObject Outlook.Application",
       "$ns = $ol.GetNamespace('MAPI')",
       "$mail = $ol.CreateItem(0)",
+      "$mail.BodyFormat = 2",
       `$mail.To = '${eTo}'`,
       `$mail.Subject = '${eSubject}'`,
       `$mail.HTMLBody = '${eHtml}'`,
