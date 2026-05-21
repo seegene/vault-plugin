@@ -21,6 +21,7 @@ export default class SeegeneVaultPlugin extends Plugin {
   mentionRecord: MentionRecord = {};
   lastActiveFile: TFile | null = null;
   lastActiveLeaf: WorkspaceLeaf | null = null;
+  preCapturedSelection: string | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -204,7 +205,11 @@ export default class SeegeneVaultPlugin extends Plugin {
     }
 
     const editor = mdView.editor;
-    const selection = editor.getSelection();
+    let selection = this.preCapturedSelection ?? "";
+    this.preCapturedSelection = null;
+
+    if (!selection) selection = editor.getSelection();
+    if (!selection) selection = (window.getSelection()?.toString() ?? "").trim();
 
     if (!selection) {
       new Notice("댓글을 달 텍스트를 먼저 선택하세요.");
@@ -214,7 +219,14 @@ export default class SeegeneVaultPlugin extends Plugin {
     const text = await this.promptInput("댓글 입력 (@이름으로 멘션 가능)");
     if (!text) return;
 
-    const lineNumber = editor.getCursor("from").line;
+    let lineNumber = 0;
+    try {
+      lineNumber = editor.getCursor("from").line;
+    } catch {
+      const content = await this.app.vault.cachedRead(mdView.file);
+      const idx = content.indexOf(selection);
+      if (idx >= 0) lineNumber = content.slice(0, idx).split("\n").length - 1;
+    }
     const author = this.getAuthor();
     const mentions = this.parseMentionsFromText(text);
 

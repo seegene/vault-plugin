@@ -46,6 +46,12 @@ export class CommentPanelView extends ItemView {
     const addBtn = header.createEl("button", { cls: "sg-add-btn" });
     setIcon(addBtn, "plus");
     addBtn.appendText(" 댓글 추가");
+    addBtn.addEventListener("mousedown", () => {
+      const mdView = this.plugin.getMarkdownView();
+      const fromEditor = mdView?.editor.getSelection() ?? "";
+      const fromDom = (window.getSelection()?.toString() ?? "").trim();
+      this.plugin.preCapturedSelection = fromEditor || fromDom || null;
+    });
     addBtn.addEventListener("click", () => this.plugin.addCommentFromSelection());
 
     if (!doc || doc.comments.length === 0) {
