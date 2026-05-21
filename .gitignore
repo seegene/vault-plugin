@@ -1,0 +1,16 @@
+node_modules/
+main.js
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Obsidian local data
+data.json

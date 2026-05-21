@@ -1,0 +1,52 @@
+/* ── Seegene Vault — Comment Panel ── */
+
+.sg-empty { color: var(--text-muted); padding: 16px; text-align: center; }
+
+.sg-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid var(--background-modifier-border);
+}
+.sg-header h4 { margin: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-add-btn { display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; }
+.sg-section { padding: 4px 0; }
+
+.sg-card {
+  margin: 6px 8px; padding: 10px 12px; border-radius: 6px;
+  background: var(--background-secondary); border-left: 3px solid var(--interactive-accent);
+}
+.sg-card.sg-resolved { opacity: 0.6; border-left-color: var(--text-muted); }
+
+.sg-quote {
+  font-size: 12px; color: var(--text-accent); background: var(--background-primary);
+  padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; cursor: pointer;
+  border-left: 2px solid var(--text-accent);
+}
+.sg-quote:hover { background: var(--background-modifier-hover); }
+
+.sg-body { margin-bottom: 6px; }
+.sg-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.sg-author { font-weight: 600; font-size: 13px; }
+.sg-time { font-size: 11px; color: var(--text-muted); }
+.sg-text { font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+
+.sg-replies { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--background-modifier-border); }
+.sg-reply { margin: 6px 0; }
+
+.sg-actions { display: flex; gap: 8px; margin-top: 8px; }
+.sg-action-btn {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px; cursor: pointer;
+  background: var(--background-modifier-hover); border: none; color: var(--text-normal);
+}
+.sg-action-btn:hover { background: var(--interactive-accent); color: var(--text-on-accent); }
+.sg-action-btn.sg-delete:hover { background: var(--text-error); }
+
+.sg-resolved-header { padding: 8px 12px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+
+.sg-input { width: 100%; min-height: 60px; margin: 8px 0; padding: 8px; border-radius: 4px; resize: vertical; }
+.sg-btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── @Mention autocomplete ── */
+
+.sg-mention-item { display: flex; flex-direction: column; gap: 2px; }
+.sg-mention-name { font-weight: 600; }
+.sg-mention-email { font-size: 0.85em; color: var(--text-muted); }
