@@ -46,6 +46,25 @@ export default class SeegeneVaultPlugin extends Plugin {
     // ── @mention autocomplete ──
     this.registerEditorSuggest(new MentionSuggest(this));
 
+    // ── Right-click context menu: "댓글 추가" when text is selected ──
+    this.registerEvent(
+      this.app.workspace.on("editor-menu", (menu, editor, view) => {
+        if (!(view instanceof MarkdownView)) return;
+        const selection = editor.getSelection();
+        if (!selection) return;
+
+        menu.addItem((item) => {
+          item
+            .setTitle("댓글 추가")
+            .setIcon("message-square")
+            .onClick(() => {
+              this.preCapturedSelection = selection;
+              this.addCommentFromSelection();
+            });
+        });
+      })
+    );
+
     // ── Settings ──
     this.addSettingTab(new SeegeneSettingTab(this.app, this));
 

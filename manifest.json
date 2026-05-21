@@ -1,7 +1,7 @@
 {
   "id": "vault-plugin",
   "name": "Seegene Vault Plugin",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "minAppVersion": "1.4.0",
   "description": "씨젠 SW연구소 공용 볼트 플러그인 — 문서 댓글, @멘션 알림, URL 파일 처리",
   "author": "SW연구소 Architect팀",
